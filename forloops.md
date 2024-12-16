@@ -1,90 +1,57 @@
-# Question
+# Forensic Examination Steps for the Exam
 
-Write a Java console application named `Question3` that functions as a workout tracker for users. The program should perform the following tasks:
+## **Step 1: Creating a Forensic Copy of the Y Drive**
+1. **Log into the remote machine on Azure Labs**:
+   - **Username**: Use the provided credentials.
+   - **Password**: `Forensics2024` (with a capital F).
 
-## 1. User Authentication:
-- Prompt the user to enter their username.
-- Convert the username to lowercase and create a filename in the format `"users/username_workouts.txt"`.
-- Welcome the user by displaying a personalized greeting.
+2. **Start FTK Imager**:
+   - Open the FTK Imager application on the remote machine.
 
-## 2. Main Menu:
-- Display a menu with the following options:
-  1. **Add Workout**
-  2. **View Workouts**
-  3. **Exit**
-- Prompt the user to enter their choice.
+3. **Create a forensic copy of the Y drive**:
+   - Ensure the Y drive is plugged into the machine (or plug it in if not already connected).
+   - In FTK Imager, go to **File > Create Disk Image**.
+   - Choose the **source** as the Y drive and proceed.
 
-## 3. Add Workout Option:
-- If the user selects **Add Workout**:
-  - Prompt the user to enter the name of the exercise.
-  - Prompt the user to enter the number of minutes spent on the exercise.
-  - Append the exercise and duration to the user's workout file in the format: `exercise duration`.
-  - Confirm to the user that the workout has been saved.
+4. **Generate a forensic image**:
+   - Select **Raw (dd)** as the image format.
+   - Choose a location to save the image (e.g., a designated folder on the machine).
+   - Provide an appropriate name for the image file.
 
-## 4. View Workouts Option:
-- If the user selects **View Workouts**:
-  - Open the user's workout file.
-  - Read and display each exercise and its corresponding duration in the format: `exercise: duration minutes`.
-  - Handle the scenario where the user has no workout history gracefully.
-
-## 5. Exit Option and Summary:
-- If the user selects **Exit**:
-  - Read the user's workout file and compute the following statistics:
-    - **Total workouts completed**: Count the number of exercise entries.
-    - **Total time across all exercises**: Sum the durations of all exercises.
-    - **Highest time in one workout**: Identify the exercise with the maximum duration and its duration.
-    - **Average time per workout**: Calculate the average duration per exercise.
-  - Display the workout summary to the user with appropriate labels.
-  - Encourage the user with a personalized message.
-
-## 6. Program Requirements:
-- Use appropriate variables and data types to store user input and computation results.
-- Utilize file handling to read from and write to the user's workout file.
-- Implement input validation where necessary (e.g., ensuring numerical inputs for durations).
-- Include comments in your code explaining the purpose of code blocks and important variables.
-- Ensure the program handles exceptions, such as file not found errors, to prevent crashes.
-- Close all open resources like scanners and files properly.
-
-## 7. Sample Interaction:
-
-=== Workout Tracker === Enter username: JohnDoe
-
-Welcome JohnDoe!
-
-=== JohnDoe's Workout Tracker ===
-
-Add Workout
-View Workouts
-Exit
-Choice: 1 Enter exercise: Running Enter number of minutes: 30 Workout saved to your log!
-
-=== JohnDoe's Workout Tracker ===
-
-Add Workout
-View Workouts
-Exit
-Choice: 2
-
-Your Workout History: Running: 30 minutes
-
-=== JohnDoe's Workout Tracker ===
-
-Add Workout
-View Workouts
-Exit
-Choice: 3
-
-=== JohnDoe's Workout Summary === Total workouts completed: 1 Total time across all exercises: 30 minutes Highest time in one workout: 30 minutes - (Running) Average time per workout: 30.00 minutes
-
-Keep up the good work, JohnDoe!
-
-yaml
-Copy code
+5. **Hashing**:
+   - Make sure FTK Imager generates **two hashes**:
+     - **MD5**
+     - **SHA-1**
+   - Write down the **last six digits** of both hashes in your workbook.
 
 ---
 
-## Instructions:
-- Write the complete Java program fulfilling all the requirements mentioned above.
-- Ensure your code is well-organized and follows best programming practices.
-- Test your program thoroughly to handle different user inputs and scenarios.
-- Submit the `.java` file containing your source code.
+## **Step 2: Analyzing the Provided Image with Autopsy**
+1. **Locate the provided image file**:
+   - On the desktop of the remote machine, find the file named `exam_image.00`.
+
+2. **Create a new Autopsy case**:
+   - Open the Autopsy application.
+   - Create a **new case** and import the `exam_image.00` file.
+
+3. **Recover files from the image**:
+   - Use Autopsy to recover **all files** from the provided image.
+
+4. **Extract files**:
+   - Extract the recovered files to a designated folder.
+
+5. **Create tags and comments**:
+   - Review all the extracted files.
+   - Assign **tags** to the files based on their content or significance.
+   - Add **appropriate comments** for each file.
+
+6. **Generate an HTML report**:
+   - In Autopsy, create an **HTML report** that includes:
+     - The recovered files.
+     - Tags and comments you have created.
+
+---
+
+## **Final Steps**
+- Once completed, **shut down the machine**.
+- There is **no need to upload anything to Moodle**. Your report and case will be reviewed later.

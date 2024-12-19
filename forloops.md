@@ -1,57 +1,118 @@
-# Forensic Examination Steps for the Exam
+# Creating a PE File from Scratch with LIEF (Python)
 
-## **Step 1: Creating a Forensic Copy of the Y Drive**
-1. **Log into the remote machine on Azure Labs**:
-   - **Username**: Use the provided credentials.
-   - **Password**: `Forensics2024` (with a capital F).
+This document provides a step-by-step guide to creating a Portable Executable (PE) file from scratch using the LIEF library in Python.
 
-2. **Start FTK Imager**:
-   - Open the FTK Imager application on the remote machine.
+## Prerequisites
 
-3. **Create a forensic copy of the Y drive**:
-   - Ensure the Y drive is plugged into the machine (or plug it in if not already connected).
-   - In FTK Imager, go to **File > Create Disk Image**.
-   - Choose the **source** as the Y drive and proceed.
+1.  **Python:** Ensure you have Python 3 installed.
+2.  **LIEF:** Install the LIEF Python bindings using pip:
 
-4. **Generate a forensic image**:
-   - Select **Raw (dd)** as the image format.
-   - Choose a location to save the image (e.g., a designated folder on the machine).
-   - Provide an appropriate name for the image file.
+    ```bash
+    pip install lief
+    ```
 
-5. **Hashing**:
-   - Make sure FTK Imager generates **two hashes**:
-     - **MD5**
-     - **SHA-1**
-   - Write down the **last six digits** of both hashes in your workbook.
+## Steps
 
----
+1.  **Import LIEF:** Import the necessary LIEF modules in your Python script:
 
-## **Step 2: Analyzing the Provided Image with Autopsy**
-1. **Locate the provided image file**:
-   - On the desktop of the remote machine, find the file named `exam_image.00`.
+    ```python
+    import lief
+    ```
 
-2. **Create a new Autopsy case**:
-   - Open the Autopsy application.
-   - Create a **new case** and import the `exam_image.00` file.
+2.  **Create a Binary Object:** This represents the PE file you're creating:
 
-3. **Recover files from the image**:
-   - Use Autopsy to recover **all files** from the provided image.
+    ```python
+    binary = lief.PE.Binary("my_program", lief.PE.PE_TYPE.EXECUTABLE_IMAGE)
+    ```
 
-4. **Extract files**:
-   - Extract the recovered files to a designated folder.
+3.  **Create Sections:** You'll need at least a `.text` (code) and a `.data` (data) section:
 
-5. **Create tags and comments**:
-   - Review all the extracted files.
-   - Assign **tags** to the files based on their content or significance.
-   - Add **appropriate comments** for each file.
+    ```python
+    text_section = lief.PE.Section(".text")
+    data_section = lief.PE.Section(".data")
+    ```
 
-6. **Generate an HTML report**:
-   - In Autopsy, create an **HTML report** that includes:
-     - The recovered files.
-     - Tags and comments you have created.
+4.  **Set Section Characteristics:** Define the properties of each section (e.g., executable, readable, writable):
 
----
+    ```python
+    text_section.characteristics = (
+        lief.PE.SECTION_CHARACTERISTICS.MEM_READ |
+        lief.PE.SECTION_CHARACTERISTICS.MEM_EXECUTE |
+        lief.PE.SECTION_CHARACTERISTICS.CNT_CODE
+    )
 
-## **Final Steps**
-- Once completed, **shut down the machine**.
-- There is **no need to upload anything to Moodle**. Your report and case will be reviewed later.
+    data_section.characteristics = (
+        lief.PE.SECTION_CHARACTERISTICS.MEM_READ |
+        lief.PE.SECTION_CHARACTERISTICS.MEM_WRITE |
+        lief.PE.SECTION_CHARACTERISTICS.CNT_INITIALIZED_DATA
+    )
+    ```
+
+5.  **Add Code to the `.text` Section:** This is the most complex part. You'll need raw machine code (bytes). For this example, we'll use a simple return instruction (`0xC3`):
+
+    ```python
+    text_section.content = [0xC3]  # Return instruction
+    ```
+
+    *   **Important:** For real programs, you'll need to compile assembly code into machine code and then add those bytes here.
+
+6.  **Add Data to the `.data` Section (Optional):** If your program needs initialized data:
+
+    ```python
+    data_section.content = [0x01, 0x02, 0x03, 0x04]  # Example data
+    ```
+
+7.  **Add Sections to the Binary:**
+
+    ```python
+    binary.add_section(text_section)
+    binary.add_section(data_section)
+    ```
+
+8.  **Set the Entry Point:** This tells the OS where to start executing the code:
+
+    ```python
+    binary.entrypoint = text_section.virtual_address  # Start of the .text section
+    ```
+
+9.  **Build the PE:** This finalizes the PE structure:
+
+    ```python
+    builder = lief.PE.Builder(binary)
+    builder.build()
+    builder.write("my_program.exe")
+    ```
+
+## Complete Example
+
+```python
+import lief
+
+binary = lief.PE.Binary("my_program", lief.PE.PE_TYPE.EXECUTABLE_IMAGE)
+
+text_section = lief.PE.Section(".text")
+text_section.characteristics = (
+    lief.PE.SECTION_CHARACTERISTICS.MEM_READ |
+    lief.PE.SECTION_CHARACTERISTICS.MEM_EXECUTE |
+    lief.PE.SECTION_CHARACTERISTICS.CNT_CODE
+)
+text_section.content = [0xC3]  # Return instruction
+
+data_section = lief.PE.Section(".data")
+data_section.characteristics = (
+    lief.PE.SECTION_CHARACTERISTICS.MEM_READ |
+    lief.PE.SECTION_CHARACTERISTICS.MEM_WRITE |
+    lief.PE.SECTION_CHARACTERISTICS.CNT_INITIALIZED_DATA
+)
+data_section.content = [0x01, 0x02, 0x03, 0x04]  # Example data
+
+binary.add_section(text_section)
+binary.add_section(data_section)
+
+binary.entrypoint = text_section.virtual_address
+
+builder = lief.PE.Builder(binary)
+builder.build()
+builder.write("my_program.exe")
+
+print("PE file created successfully!")
